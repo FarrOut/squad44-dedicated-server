@@ -1,5 +1,11 @@
 {
   "requires_approval":"never",
+  "tags": [
+    {
+      "Key": "PropertyOf",
+      "Value": "squad44-dedicated-server"
+    }
+  ],
   "app": "python app.py",
   "watch": {
     "include": [
