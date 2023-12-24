@@ -1,4 +1,5 @@
 {
+  "requires_approval":"never",
   "app": "python app.py",
   "watch": {
     "include": [
