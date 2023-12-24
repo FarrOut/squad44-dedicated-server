@@ -10,10 +10,12 @@ class ImageBuilderPipeline(NestedStack):
 
     def __init__(self, scope: Construct, construct_id: str,
                  bucket_name: str,
+                 version: str,
                  components_prefix: str,
                  base_image_arn: str,
                  image_pipeline_name: str,
                  instance_profile: iam.CfnInstanceProfile,
+                 distribution_configuration: imagebuilder.CfnDistributionConfiguration,
                  removal_policy: RemovalPolicy = RemovalPolicy.RETAIN,
                  **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -29,7 +31,7 @@ class ImageBuilderPipeline(NestedStack):
                                                       "component_python3",
                                                       name="InstallPython3",
                                                       platform="Linux",
-                                                      version="1.0.1",
+                                                      version=version,
                                                       uri=component_python3_uri
                                                       )
 
@@ -39,7 +41,7 @@ class ImageBuilderPipeline(NestedStack):
                                                       "component_angular",
                                                       name="InstallAngular",
                                                       platform="Linux",
-                                                      version="1.0.0",
+                                                      version=version,
                                                       uri=component_angular_uri
                                                       )
 
@@ -49,7 +51,7 @@ class ImageBuilderPipeline(NestedStack):
                                                      "component_dotnet",
                                                      name="InstallDotnetCore",
                                                      platform="Linux",
-                                                     version="1.0.0",
+                                                     version=version,
                                                      uri=component_dotnet_uri
                                                      )
 
@@ -59,7 +61,7 @@ class ImageBuilderPipeline(NestedStack):
                                                        "component_devtools",
                                                        name="InstallDevTools",
                                                        platform="Linux",
-                                                       version="1.0.0",
+                                                       version=version,
                                                        uri=component_devtools_uri
                                                        )
 
@@ -67,7 +69,7 @@ class ImageBuilderPipeline(NestedStack):
         recipe = imagebuilder.CfnImageRecipe(self,
                                              "UbuntuDevWorkstationRecipe",
                                              name="UbuntuDevWorkstationRecipe",
-                                             version="0.0.1",
+                                             version=version,
                                              components=[
                                                  {"componentArn": component_python3.attr_arn},
                                                  {"componentArn": component_angular.attr_arn},
@@ -94,7 +96,8 @@ class ImageBuilderPipeline(NestedStack):
                                                  "UbuntuDevWorkstationPipeline",
                                                  name=image_pipeline_name,
                                                  image_recipe_arn=recipe.attr_arn,
-                                                 infrastructure_configuration_arn=infraconfig.attr_arn
+                                                 infrastructure_configuration_arn=infraconfig.attr_arn,
+                                                 distribution_configuration_arn=distribution_configuration.attr_arn,
                                                  )
 
         pipeline.add_depends_on(infraconfig)
