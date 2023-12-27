@@ -1,5 +1,6 @@
 {
-  "requires_approval":"never",
+  "requires_approval": "never",
+  
   "tags": [
     {
       "Key": "PropertyOf",

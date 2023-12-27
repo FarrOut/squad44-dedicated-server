@@ -1,7 +1,7 @@
 import aws_cdk as core
 import aws_cdk.assertions as assertions
 
-from squad44_dedicated_server.squad44_dedicated_server_stack import Squad44DedicatedServerStack
+from squad44_dedicated_server.building.squad44_image_builder_stack import Squad44DedicatedServerStack
 
 # example tests. To run these tests, uncomment this file along with the example
 # resource in squad44_dedicated_server/squad44_dedicated_server_stack.py

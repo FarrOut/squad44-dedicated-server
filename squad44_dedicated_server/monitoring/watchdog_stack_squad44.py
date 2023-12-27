@@ -4,10 +4,8 @@ from aws_cdk import (
     aws_resourcegroups as resourcegroups
 )
 from constructs import Construct
-from squad44_dedicated_server.images.image_builder_pipeline_nestedstack import ImageBuilderPipeline
 from squad44_dedicated_server.monitoring.anomaly_monitor_nestedstack import AnomalyMonitor
 from squad44_dedicated_server.monitoring.resource_explorer_nestedstack import ResourceExplorer
-from squad44_dedicated_server.security.authorization_nestedstack import AuthorizationNestedStack
 from squad44_dedicated_server.storage.build_assets_nestedstack import BuildAssetsNestedStack
 from squad44_dedicated_server.storage.s3_nestedstack import S3NestedStack
 

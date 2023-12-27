@@ -4,24 +4,23 @@ from aws_cdk import (
     # aws_sqs as sqs,
 )
 from constructs import Construct
-from squad44_dedicated_server.images.distribution_nestedstack import Distribution
-from squad44_dedicated_server.images.image_builder_pipeline_nestedstack import ImageBuilderPipeline
-from squad44_dedicated_server.security.authorization_nestedstack import AuthorizationNestedStack
+from squad44_dedicated_server.building.images.distribution_nestedstack import Distribution
+from squad44_dedicated_server.building.images.image_builder_pipeline_nestedstack import ImageBuilderPipeline
+from squad44_dedicated_server.building.security.authorization_nestedstack import AuthorizationNestedStack
 from squad44_dedicated_server.storage.build_assets_nestedstack import BuildAssetsNestedStack
 from squad44_dedicated_server.storage.s3_nestedstack import S3NestedStack
 
 
-class Squad44DedicatedServerStack(Stack):
+class Squad44ImageBuilder(Stack):
 
     def __init__(self, scope: Construct, construct_id: str,
+                 version: str,
                  removal_policy: RemovalPolicy = RemovalPolicy.DESTROY,
                  **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         # s3 prefix/key for storing components
         components_prefix = "components"
-
-        version = '0.0.1'
 
         bucket = S3NestedStack(
             self, "S3NestedStack", auto_delete_objects=True, removal_policy=removal_policy).bucket
