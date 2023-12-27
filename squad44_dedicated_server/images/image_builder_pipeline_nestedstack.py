@@ -84,7 +84,7 @@ class ImageBuilderPipeline(NestedStack):
                                                                   "UbuntuDevWorkstationInfraConfig",
                                                                   name="UbuntuDevWorkstationInfraConfig",
                                                                   instance_types=[
-                                                                      "t4.large"],
+                                                                      "m6i.large"],
                                                                   instance_profile_name="UbuntuDevWorkstationInstanceProfile"
                                                                   )
 

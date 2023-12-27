@@ -21,7 +21,7 @@ class Squad44DedicatedServerStack(Stack):
         # s3 prefix/key for storing components
         components_prefix = "components"
 
-        version = '0.0.2'
+        version = '0.0.1'
 
         bucket = S3NestedStack(
             self, "S3NestedStack", auto_delete_objects=True, removal_policy=removal_policy).bucket
