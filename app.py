@@ -20,7 +20,7 @@ Squad44DedicatedServerStack(app, "Squad44DedicatedServerStack",
 
 WatchdogStack(app, "WatchdogStackSquad44",
               env=africa_env,
-              removal_policy=cdk.RemovalPolicy.RETAIN,
+              removal_policy=cdk.RemovalPolicy.DESTROY,
               )
 
 app.synth()
