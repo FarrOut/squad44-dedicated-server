@@ -14,7 +14,7 @@ class ImageBuilderPipeline(NestedStack):
                  components_prefix: str,
                  base_image_arn: str,
                  image_pipeline_name: str,
-                 instance_profile: iam.CfnInstanceProfile,
+                 instance_profile: iam.IInstanceProfile,
                  distribution_configuration: imagebuilder.CfnDistributionConfiguration,
                  removal_policy: RemovalPolicy = RemovalPolicy.RETAIN,
                  **kwargs) -> None:
@@ -67,8 +67,8 @@ class ImageBuilderPipeline(NestedStack):
 
         # recipe that installs all of above components together with a ubuntu base image
         recipe = imagebuilder.CfnImageRecipe(self,
-                                             "UbuntuDevWorkstationRecipe",
-                                             name="UbuntuDevWorkstationRecipe",
+                                             "Squad44Recipe",
+                                             name="squad44-dedicated-server",
                                              version=version,
                                              components=[
                                                  {"componentArn": component_python3.attr_arn},
@@ -81,15 +81,12 @@ class ImageBuilderPipeline(NestedStack):
 
         # create infrastructure configuration to supply instance type
         infraconfig = imagebuilder.CfnInfrastructureConfiguration(self,
-                                                                  "UbuntuDevWorkstationInfraConfig",
-                                                                  name="UbuntuDevWorkstationInfraConfig",
+                                                                  "Squad44InfraConfig",
+                                                                  name="Squad44InfraConfig",
                                                                   instance_types=[
                                                                       "m6i.large"],
-                                                                  instance_profile_name="UbuntuDevWorkstationInstanceProfile"
+                                                                  instance_profile_name=instance_profile.instance_profile_name,
                                                                   )
-
-        # infrastructure need to wait for instance profile to complete before beginning deployment.
-        infraconfig.add_depends_on(instance_profile)
 
         # build the imagebuilder pipeline
         pipeline = imagebuilder.CfnImagePipeline(self,
