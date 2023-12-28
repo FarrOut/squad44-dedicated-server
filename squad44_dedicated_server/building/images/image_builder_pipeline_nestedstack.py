@@ -95,6 +95,12 @@ class ImageBuilderPipeline(NestedStack):
                                                  image_recipe_arn=recipe.attr_arn,
                                                  infrastructure_configuration_arn=infraconfig.attr_arn,
                                                  distribution_configuration_arn=distribution_configuration.attr_arn,
+                                                 schedule=imagebuilder.CfnImagePipeline.ScheduleProperty(
+                                                     pipeline_execution_start_condition="EXPRESSION_MATCH_AND_DEPENDENCY_UPDATES_AVAILABLE",
+
+                                                     # Once a month on the first day
+                                                     schedule_expression="cron(0 0 1 * *)"
+                                                 ),
                                                  )
 
         pipeline.add_depends_on(infraconfig)
