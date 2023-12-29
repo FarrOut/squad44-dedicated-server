@@ -32,7 +32,14 @@ class Squad44Server(Stack):
         # COMPUTING
 
         machine_image = ec2.MachineImage.lookup(
-            name='*squad44*', owners=[str(self.account)]),
+            name='*squad44*', owners=[str(self.account)])
+
+        # CfnOutput(self, "MachineImageId", value=str(machine_image),
+        #           description='The ID of the Machine Image.')
+        # CfnOutput(self, "MachineImageName", value=str(machine_image.image_name),
+        #           description='The name of the Machine Image.')
+        # CfnOutput(self, "MachineImageOwner", value=str(
+        #     machine_image.image_owner_alias))
 
         # template = ec2.LaunchTemplate(self, "LaunchTemplate",
         #                               machine_image=machine_image,

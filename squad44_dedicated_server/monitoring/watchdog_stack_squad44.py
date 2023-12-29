@@ -17,5 +17,6 @@ class WatchdogStack(Stack):
                  **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        ResourceExplorer(self, "ResourceExplorer",)
+        ResourceExplorer(self, "ResourceExplorer",
+                         removal_policy=removal_policy)
         # AnomalyMonitor(self, "AnomalyMonitor",)

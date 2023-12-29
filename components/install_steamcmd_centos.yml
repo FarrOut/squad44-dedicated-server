@@ -1,0 +1,57 @@
+name: InstallSteamCMD
+description: this document installs SteamCMD on CentOS
+schemaVersion: 1.0
+
+phases:
+    - name: build
+      steps:
+        - name: UpdateMyLinux
+          action: UpdateOS
+          onFailure: Abort
+          maxAttempts: 3
+
+        - name: PrepareEnv
+          action: ExecuteBash
+          timeoutSeconds: 180
+          onFailure: Abort
+          maxAttempts: 1
+          inputs:
+            commands:
+                - sudo yum -y install tree wget glibc libstdc++ glibc.i686 libstdc++.i686
+
+        - name: ConfigureUsers
+          action: ExecuteBash
+          timeoutSeconds: 5
+          onFailure: Abort
+          maxAttempts: 2
+          inputs:
+            commands:
+                - sudo adduser playmaster
+                - sudo groupadd playmasters
+                - sudo usermod -aG playmasters playmaster              
+
+        - name: CreatingGameDirectory
+          action: CreateFolder
+          inputs:
+            - path: /SteamCMD
+              owner: playmaster
+              group: playmasters
+              permissions: 0777
+
+        - name: DownloadSteamCMD
+          action: ExecuteBash
+          timeoutSeconds: 180
+          onFailure: Abort
+          maxAttempts: 2
+          inputs:
+            commands:                
+                - cd /SteamCMD/ && wget -q -O - https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz | tar xzv    
+
+        - name: InspectDirectories
+          action: ExecuteBash
+          timeoutSeconds: 3
+          onFailure: Abort
+          maxAttempts: 2
+          inputs:
+            commands:
+                - tree /SteamCMD/

@@ -41,9 +41,8 @@ class Squad44ImageBuilder(Stack):
                                                   ).distro
 
         ImageBuilderPipeline(self, "ImageBuilderPipeline",
-                             version=version,
                              base_image_arn=f'arn:aws:imagebuilder:{
-                                 self.region}:aws:image/amazon-linux-2023-arm64/2023.12.15',
+                                 self.region}:aws:image/amazon-linux-2023-x86/2023.12.15',
                              image_pipeline_name='squad44-dedicated-server',
                              bucket_name=bucket.bucket_name,
                              components_prefix=components_prefix,

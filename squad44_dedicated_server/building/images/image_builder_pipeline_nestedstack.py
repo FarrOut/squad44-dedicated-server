@@ -4,13 +4,14 @@ from aws_cdk import (
     aws_iam as iam,
     NestedStack, RemovalPolicy, CfnOutput, )
 from constructs import Construct
+import time
+import uuid
 
 
 class ImageBuilderPipeline(NestedStack):
 
     def __init__(self, scope: Construct, construct_id: str,
                  bucket_name: str,
-                 version: str,
                  components_prefix: str,
                  base_image_arn: str,
                  image_pipeline_name: str,
@@ -22,62 +23,51 @@ class ImageBuilderPipeline(NestedStack):
 
         bucket_uri = "s3://" + bucket_name + "/" + components_prefix
 
+        # [Server Hosting] How to set up a dedicated server.
+        # https://steamcommunity.com/app/736220/discussions/0/2967271684632425013/
+
         # NOTE: when creating components, version number is supplied manually. If you update the components yaml and
         # need a new version deployed, version need to be updated manually.
 
-        # spec to install python3
-        component_python3_uri = bucket_uri + '/install_python3.yml'
-        component_python3 = imagebuilder.CfnComponent(self,
-                                                      "component_python3",
-                                                      name="InstallPython3",
-                                                      platform="Linux",
-                                                      version=version,
-                                                      uri=component_python3_uri
-                                                      )
-
-        # spec to install angular
-        component_angular_uri = bucket_uri + '/install_angular.yml'
-        component_angular = imagebuilder.CfnComponent(self,
-                                                      "component_angular",
-                                                      name="InstallAngular",
-                                                      platform="Linux",
-                                                      version=version,
-                                                      uri=component_angular_uri
-                                                      )
-
-        # spec to install dotnet core
-        component_dotnet_uri = bucket_uri + '/install_dotnetcore.yml'
-        component_dotnet = imagebuilder.CfnComponent(self,
-                                                     "component_dotnet",
-                                                     name="InstallDotnetCore",
-                                                     platform="Linux",
-                                                     version=version,
-                                                     uri=component_dotnet_uri
-                                                     )
-
-        # spec to install docker and other dev tools
-        component_devtools_uri = bucket_uri + '/install_devtools.yml'
-        component_devtools = imagebuilder.CfnComponent(self,
-                                                       "component_devtools",
-                                                       name="InstallDevTools",
+        # spec to install SteamCMD component
+        component_steamcmd_uri = bucket_uri + '/install_steamcmd_centos.yml'
+        component_steamcmd = imagebuilder.CfnComponent(self,
+                                                       "component_steamcmd",
+                                                       name="InstallSteamCMD",
                                                        platform="Linux",
-                                                       version=version,
-                                                       uri=component_devtools_uri
+                                                       version="0.0.1",
+                                                       uri=component_steamcmd_uri
                                                        )
 
+        # spec to install squad44
+        component_squad44_uri = bucket_uri + '/install_squad44_centos.yml'
+        component_squad44 = imagebuilder.CfnComponent(self,
+                                                      "component_squad44",
+                                                      name="InstallSquad44",
+                                                      platform="Linux",
+                                                      version="0.0.1",
+                                                      uri=component_squad44_uri
+                                                      )
+
         # recipe that installs all of above components together with a ubuntu base image
+
+        current_time = time.time()
+        guid = uuid.uuid4()
+
         recipe = imagebuilder.CfnImageRecipe(self,
-                                             "Squad44Recipe",
-                                             name="squad44-dedicated-server",
-                                             version=version,
+                                             f"Squad44Recipe",
+                                             name=f"squad44-dedicated-server-{
+                                                 guid}",
+                                             version="0.0.1",
                                              components=[
-                                                 {"componentArn": component_python3.attr_arn},
-                                                 {"componentArn": component_angular.attr_arn},
-                                                 {"componentArn": component_dotnet.attr_arn},
-                                                 {"componentArn": component_devtools.attr_arn}
+                                                 {"componentArn": component_steamcmd.attr_arn},
+                                                 {"componentArn": component_squad44.attr_arn}
                                              ],
-                                             parent_image=base_image_arn
+                                             parent_image=base_image_arn,
+                                             description=f"Squad44 Dedicated Server. Built at {
+                                                 current_time:.2f}.",
                                              )
+        recipe.apply_removal_policy(RemovalPolicy.DESTROY)
 
         # create infrastructure configuration to supply instance type
         infraconfig = imagebuilder.CfnInfrastructureConfiguration(self,
@@ -90,17 +80,17 @@ class ImageBuilderPipeline(NestedStack):
 
         # build the imagebuilder pipeline
         pipeline = imagebuilder.CfnImagePipeline(self,
-                                                 "UbuntuDevWorkstationPipeline",
+                                                 "Squad44Pipeline",
                                                  name=image_pipeline_name,
                                                  image_recipe_arn=recipe.attr_arn,
                                                  infrastructure_configuration_arn=infraconfig.attr_arn,
                                                  distribution_configuration_arn=distribution_configuration.attr_arn,
-                                                 schedule=imagebuilder.CfnImagePipeline.ScheduleProperty(
-                                                     pipeline_execution_start_condition="EXPRESSION_MATCH_AND_DEPENDENCY_UPDATES_AVAILABLE",
+                                                 #  schedule=imagebuilder.CfnImagePipeline.ScheduleProperty(
+                                                 #      pipeline_execution_start_condition="EXPRESSION_MATCH_AND_DEPENDENCY_UPDATES_AVAILABLE",
 
-                                                     # Once a month on the first day
-                                                     schedule_expression="cron(0 0 1 * *)"
-                                                 ),
+                                                 #      # Once a month on the first day
+                                                 #      schedule_expression="cron(0 0 1 * *)"
+                                                 #  ),
                                                  )
 
         pipeline.add_depends_on(infraconfig)

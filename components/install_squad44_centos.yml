@@ -1,0 +1,50 @@
+name: InstallSquad44
+description: this document installs Squad44 on CentOS
+schemaVersion: 1.0
+
+parameters:
+  - Port:
+      type: string
+      default: "10027"
+      description: Game port
+  - QueryPort:
+      type: string
+      default: "10037"
+      description: Query port      
+  - MaxPlayers:
+      type: string
+      default: "80"
+      description: Max players
+
+phases:
+    - name: build
+      steps:
+
+        - name: CreateUpdateScript
+          action: ExecuteBash
+          timeoutSeconds: 5
+          onFailure: Abort
+          maxAttempts: 2
+          inputs:
+            commands:
+                - echo "/SteamCMD/steamcmd.sh +@sSteamCmdForcePlatformType windows +login anonymous +force_install_dir server1 +app_update 746200 +quit validate" > /SteamCMD/updateserver1.sh
+                - chmod +x /SteamCMD/updateserver1.sh
+
+        - name: DownloadGameFile
+          action: ExecuteBash
+          timeoutSeconds: 7200
+          onFailure: Abort
+          maxAttempts: 2
+          inputs:
+            commands:
+                - /SteamCMD/updateserver1.sh             
+
+        - name: CreateExecutionScript
+          action: ExecuteBash
+          timeoutSeconds: 5
+          onFailure: Abort
+          maxAttempts: 2
+          inputs:
+            commands:
+                - echo "cd /SteamCMD/server1; ./PostScriptumServer.sh Port={{ Port }} QueryPort={{ QueryPort }} FIXEDMAXPLAYERS={{ MaxPlayers }}" > /SteamCMD/startserver1.sh
+                - chmod +x /SteamCMD/startserver1.sh                
