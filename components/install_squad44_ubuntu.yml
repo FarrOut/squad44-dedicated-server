@@ -1,0 +1,45 @@
+name: InstallSquad44
+description: this document installs Squad44 on Ubuntu using LinuxGM
+schemaVersion: 1.0
+
+phases:
+  - name: build
+    steps:
+      - name: ConfigureUsers
+        action: ExecuteBash
+        timeoutSeconds: 5
+        onFailure: Abort
+        maxAttempts: 2
+        inputs:
+          commands:
+            - sudo adduser --disabled-password --gecos "" psserver
+            - sudo passwd -d psserver
+            - sudo usermod -aG playmasters psserver
+
+      - name: CreatingGameDirectory
+        action: CreateFolder
+        inputs:
+          - path: /squad44
+            owner: psserver
+            group: playmasters
+            permissions: 0777
+
+      - name: DownloadServerScript
+        action: ExecuteBash
+        timeoutSeconds: 5
+        onFailure: Abort
+        maxAttempts: 2
+        inputs:
+          commands:
+            - sudo chown -R psserver:playmasters /squad44/
+            - cd /squad44/ && su -c 'wget -O linuxgsm.sh https://linuxgsm.sh && chmod +x linuxgsm.sh && bash linuxgsm.sh psserver' psserver
+
+      - name: DownloadSquad44
+        action: ExecuteBash
+        timeoutSeconds: 7200
+        onFailure: Abort
+        maxAttempts: 1
+        inputs:
+          commands:
+            - cd /squad44/ && su -c './psserver auto-install' psserver
+

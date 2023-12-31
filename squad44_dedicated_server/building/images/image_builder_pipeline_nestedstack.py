@@ -11,6 +11,7 @@ import uuid
 class ImageBuilderPipeline(NestedStack):
 
     def __init__(self, scope: Construct, construct_id: str,
+                 version: str,
                  bucket_name: str,
                  components_prefix: str,
                  base_image_arn: str,
@@ -29,25 +30,27 @@ class ImageBuilderPipeline(NestedStack):
         # NOTE: when creating components, version number is supplied manually. If you update the components yaml and
         # need a new version deployed, version need to be updated manually.
 
-        # spec to install SteamCMD component
-        component_steamcmd_uri = bucket_uri + '/install_steamcmd_centos.yml'
-        component_steamcmd = imagebuilder.CfnComponent(self,
-                                                       "component_steamcmd",
-                                                       name="InstallSteamCMD",
-                                                       platform="Linux",
-                                                       version="0.0.1",
-                                                       uri=component_steamcmd_uri
-                                                       )
+        # spec to install steam components
+        component_steam_uri = bucket_uri + '/install_steam_ubuntu.yml'
+        component_steam = imagebuilder.CfnComponent(self,
+                                                    "component_steam",
+                                                    name="InstallSteam",
+                                                    platform="Linux",
+                                                    version=version,
+                                                    uri=component_steam_uri
+                                                    )
+        component_steam.apply_removal_policy(removal_policy)
 
         # spec to install squad44
-        component_squad44_uri = bucket_uri + '/install_squad44_centos.yml'
+        component_squad44_uri = bucket_uri + '/install_squad44_ubuntu.yml'
         component_squad44 = imagebuilder.CfnComponent(self,
                                                       "component_squad44",
                                                       name="InstallSquad44",
                                                       platform="Linux",
-                                                      version="0.0.1",
+                                                      version=version,
                                                       uri=component_squad44_uri
                                                       )
+        component_squad44.apply_removal_policy(removal_policy)
 
         # recipe that installs all of above components together with a ubuntu base image
 
@@ -56,16 +59,14 @@ class ImageBuilderPipeline(NestedStack):
 
         recipe = imagebuilder.CfnImageRecipe(self,
                                              f"Squad44Recipe",
-                                             name=f"squad44-dedicated-server-{
-                                                 guid}",
-                                             version="0.0.1",
+                                             name=f"squad44-dedicated-server",
+                                             version=version,
                                              components=[
-                                                 {"componentArn": component_steamcmd.attr_arn},
+                                                 {"componentArn": component_steam.attr_arn},
                                                  {"componentArn": component_squad44.attr_arn}
                                              ],
                                              parent_image=base_image_arn,
-                                             description=f"Squad44 Dedicated Server. Built at {
-                                                 current_time:.2f}.",
+                                             description=f"Squad44 Dedicated Server.",
                                              )
         recipe.apply_removal_policy(RemovalPolicy.DESTROY)
 
@@ -74,7 +75,11 @@ class ImageBuilderPipeline(NestedStack):
                                                                   "Squad44InfraConfig",
                                                                   name="Squad44InfraConfig",
                                                                   instance_types=[
-                                                                      "m6i.large"],
+                                                                    #   "h1.2xlarge", 
+                                                                    #   "i4g.large",
+                                                                    #   "m5d.large",
+                                                                    #   "i3.large",
+                                                                      "i4i.large"],
                                                                   instance_profile_name=instance_profile.instance_profile_name,
                                                                   )
 
@@ -92,5 +97,6 @@ class ImageBuilderPipeline(NestedStack):
                                                  #      schedule_expression="cron(0 0 1 * *)"
                                                  #  ),
                                                  )
+        pipeline.apply_removal_policy(removal_policy)
 
         pipeline.add_depends_on(infraconfig)

@@ -19,7 +19,7 @@ africa_env = Environment(account=os.getenv(
 
 app = App()
 
-version = "0.0.1"
+version = "0.0.19"
 
 image_builder = Squad44ImageBuilder(app, "Squad44ImageBuilder",
                                     env=africa_env,
