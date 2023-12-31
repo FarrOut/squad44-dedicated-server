@@ -67,6 +67,17 @@ class ImageBuilderPipeline(NestedStack):
                                              ],
                                              parent_image=base_image_arn,
                                              description=f"Squad44 Dedicated Server.",
+                                             block_device_mappings=[imagebuilder.CfnImageRecipe.InstanceBlockDeviceMappingProperty(
+                                                 device_name='/dev/sda1',
+                                                 ebs=imagebuilder.CfnImageRecipe.EbsInstanceBlockDeviceSpecificationProperty(
+                                                     delete_on_termination=True,
+                                                     encrypted=False,
+                                                     volume_size=70,
+                                                     volume_type="standard"
+                                                 ),
+                                                 virtual_name="see-drive"
+                                             )],
+                                             working_directory='/playmaster',
                                              )
         recipe.apply_removal_policy(RemovalPolicy.DESTROY)
 
@@ -75,11 +86,13 @@ class ImageBuilderPipeline(NestedStack):
                                                                   "Squad44InfraConfig",
                                                                   name="Squad44InfraConfig",
                                                                   instance_types=[
-                                                                    #   "h1.2xlarge", 
-                                                                    #   "i4g.large",
-                                                                    #   "m5d.large",
-                                                                    #   "i3.large",
+                                                                      #   "h1.2xlarge",
+                                                                      "i4g.large",
+                                                                      #   "m5d.large",
+                                                                      "i3.large",
                                                                       "i4i.large"],
+                                                                  terminate_instance_on_failure=True,
+                                                                  #   key_pair=key_pair.key_pair_name,
                                                                   instance_profile_name=instance_profile.instance_profile_name,
                                                                   )
 
@@ -100,3 +113,68 @@ class ImageBuilderPipeline(NestedStack):
         pipeline.apply_removal_policy(removal_policy)
 
         pipeline.add_depends_on(infraconfig)
+
+        # instance_profile.role.grant_assume_role(
+        #     iam.ServicePrincipal("imagebuilder.amazonaws.com"))
+        lifecycle_policy = imagebuilder.CfnLifecyclePolicy(self, "MyCfnLifecyclePolicy",
+                                                           execution_role=f"arn:aws:iam::{
+                                                               self.account}:role/aws-service-role/imagebuilder.amazonaws.com/AWSServiceRoleForImageBuilder",
+                                                           name="Springcleaner",
+                                                           policy_details=[imagebuilder.CfnLifecyclePolicy.PolicyDetailProperty(
+                                                               action=imagebuilder.CfnLifecyclePolicy.ActionProperty(
+                                                                   type="DELETE",
+
+                                                                   # the properties below are optional
+                                                                   include_resources=imagebuilder.CfnLifecyclePolicy.IncludeResourcesProperty(
+                                                                       amis=True,
+                                                                       snapshots=True
+                                                                   )
+                                                               ),
+                                                               filter=imagebuilder.CfnLifecyclePolicy.FilterProperty(
+                                                                   type="AGE",
+                                                                   value=1,
+                                                                   unit="DAYS",
+                                                                   # retain_at_least=1,
+
+                                                               ),
+
+                                                               #        # the properties below are optional
+                                                               #        exclusion_rules=imagebuilder.CfnLifecyclePolicy.ExclusionRulesProperty(
+                                                               #            amis=imagebuilder.CfnLifecyclePolicy.AmiExclusionRulesProperty(
+                                                               #                is_public=False,
+                                                               #                last_launched=imagebuilder.CfnLifecyclePolicy.LastLaunchedProperty(
+                                                               #                    unit="unit",
+                                                               #                    value=123
+                                                               #                ),
+                                                               #                regions=[
+                                                               #                    "regions"],
+                                                               #                shared_accounts=[
+                                                               #                    "sharedAccounts"],
+                                                               #                tag_map={
+                                                               #                    "tag_map_key": "tagMap"
+                                                               #                }
+                                                               #            ),
+                                                               #            tag_map={
+                                                               #                "tag_map_key": "tagMap"
+                                                               #            }
+                                                               #        )
+                                                           )],
+                                                           resource_selection=imagebuilder.CfnLifecyclePolicy.ResourceSelectionProperty(
+                                                               recipes=[imagebuilder.CfnLifecyclePolicy.RecipeSelectionProperty(
+                                                                   name=recipe.attr_name,
+                                                                   semantic_version=version,
+                                                               )],
+                                                           ),
+                                                           resource_type="AMI_IMAGE",
+                                                           status='ENABLED',
+                                                           description='Delete images older than a day.',
+                                                           )
+        lifecycle_policy.apply_removal_policy(removal_policy)
+        CfnOutput(self, "LifecyclePolicyArn", value=lifecycle_policy.attr_arn,
+                  description="The ARN of the lifecycle policy.")
+        CfnOutput(self, "LifecyclePolicyName", value=lifecycle_policy.name,
+                  description="The name of the lifecycle policy.")
+        CfnOutput(self, "LifecyclePolicyDescription", value=str(lifecycle_policy.description),
+                  description="The description of the lifecycle policy.")
+        CfnOutput(self, "LifecyclePolicyStatus", value=str(
+            lifecycle_policy.status), description="The status of the lifecycle policy.")

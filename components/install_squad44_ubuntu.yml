@@ -19,7 +19,7 @@ phases:
       - name: CreatingGameDirectory
         action: CreateFolder
         inputs:
-          - path: /squad44
+          - path: ./squad44
             owner: psserver
             group: playmasters
             permissions: 0777
@@ -31,15 +31,25 @@ phases:
         maxAttempts: 2
         inputs:
           commands:
-            - sudo chown -R psserver:playmasters /squad44/
-            - cd /squad44/ && su -c 'wget -O linuxgsm.sh https://linuxgsm.sh && chmod +x linuxgsm.sh && bash linuxgsm.sh psserver' psserver
+            - sudo chown -R psserver:playmasters ./squad44/
+            - cd ./squad44/ && su -c 'wget -O linuxgsm.sh https://linuxgsm.sh && chmod +x linuxgsm.sh && bash linuxgsm.sh psserver' psserver
+
+      - name: CheckDiskSpace
+        action: ExecuteBash
+        timeoutSeconds: 2
+        onFailure: Continue
+        maxAttempts: 3
+        inputs:
+          commands:
+            - lsblk # lsblk -f -o NAME,FSTYPE,MOUNTPOINT,SIZE,FSAVAIL,FSUSED,FSUSED%
+            - df -h / # df -h / # df -h /home # df -h /var/lib/docker # df -h /mnt/data # df -h /mnt/data2 # df -h /mnt/data3 # df -h /mnt/data4 # df -h /mnt/data
 
       - name: DownloadSquad44
         action: ExecuteBash
-        timeoutSeconds: 7200
+        timeoutSeconds: 1800 # 1800 seconds = 30 minutes
         onFailure: Abort
         maxAttempts: 1
         inputs:
           commands:
-            - cd /squad44/ && su -c './psserver auto-install' psserver
+            - cd ./squad44/ && su -c './psserver auto-install' psserver
 

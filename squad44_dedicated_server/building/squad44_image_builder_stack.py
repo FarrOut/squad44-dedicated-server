@@ -43,6 +43,7 @@ class Squad44ImageBuilder(Stack):
         ImageBuilderPipeline(self, "ImageBuilderPipeline",
                              base_image_arn=f'arn:aws:imagebuilder:{
                                  self.region}:aws:image/ubuntu-server-20-lts-x86/2023.9.7',
+                                #  amazon/ubuntu-minimal/images/hvm-ssd/ubuntu-jammy-22.04-amd64-minimal-20230921
                              image_pipeline_name='squad44-dedicated-server',
                              bucket_name=bucket.bucket_name,
                              version=version,

@@ -23,7 +23,7 @@ phases:
         action: ExecuteBash
         timeoutSeconds: 180
         onFailure: Abort
-        maxAttempts: 2
+        maxAttempts: 1
         inputs:
           commands:
             - sudo apt-get -y install curl wget file tar bzip2 gzip unzip bsdmainutils python3 util-linux ca-certificates binutils bc jq tmux netcat lib32gcc-s1 lib32stdc++6 libsdl2-2.0-0:i386 libgconf-2-4 jq nano locales 
@@ -33,7 +33,7 @@ phases:
         action: ExecuteBash
         timeoutSeconds: 5
         onFailure: Abort
-        maxAttempts: 2
+        maxAttempts: 1
         inputs:
           commands:
               - sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
