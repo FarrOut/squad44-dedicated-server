@@ -37,6 +37,22 @@ class ServerAuthorization(NestedStack):
                                                 allow_all_outbound=False,
                                                 vpc=vpc,
                                                 )
+        self.security_group.add_ingress_rule(
+            ec2.Peer.any_ipv4(), ec2.Port.tcp(10027), "game port tcp")
+        self.security_group.add_ingress_rule(
+            ec2.Peer.any_ipv4(), ec2.Port.udp(10027), "game port udp")
+        self.security_group.add_ingress_rule(
+            ec2.Peer.any_ipv4(), ec2.Port.tcp(10037), "query port tcp")
+        self.security_group.add_ingress_rule(
+            ec2.Peer.any_ipv4(), ec2.Port.udp(10037), "query port udp")
+        self.security_group.add_ingress_rule(
+            ec2.Peer.any_ipv4(), ec2.Port.tcp(10038), "query port plus one tcp")
+        self.security_group.add_ingress_rule(
+            ec2.Peer.any_ipv4(), ec2.Port.udp(10038), "game port plus one udp")
+        self.security_group.add_ingress_rule(
+            ec2.Peer.any_ipv4(), ec2.Port.tcp(21114), "rcon tcp")
+        self.security_group.add_ingress_rule(
+            ec2.Peer.any_ipv4(), ec2.Port.udp(21114), "rcon udp")
         CfnOutput(self, "SecurityGroupId", value=self.security_group.security_group_id,
                   description='The ID of the Security Group.')
 

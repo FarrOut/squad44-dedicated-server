@@ -53,3 +53,55 @@ phases:
           commands:
             - cd ./squad44/ && su -c './psserver auto-install' psserver
 
+      - name: CheckDiskSpaceAgain
+        action: ExecuteBash
+        timeoutSeconds: 2
+        onFailure: Continue
+        maxAttempts: 3
+        inputs:
+          commands:
+            - lsblk # lsblk -f -o NAME,FSTYPE,MOUNTPOINT,SIZE,FSAVAIL,FSUSED,FSUSED%
+            - df -h / # df -h / # df -h /home # df -h /var/lib/docker # df -h /mnt/data # df -h /mnt/data2 # df -h /mnt/data3 # df -h /mnt/data4 # df -h /mnt/data
+
+      - name: CreateService
+        action: CreateFile
+        timeoutSeconds: 2
+        onFailure: Abort
+        maxAttempts: 1
+        inputs:
+          - path: /etc/systemd/system/squad44.service
+            content: |
+                [Unit]
+                Description=Squad44 dedicated server
+                After=network.target
+
+                [Service]
+                ExecStart=/playmaster/squad44/psserver start
+                ExecReload=/playmaster/squad44/psserver restart
+                ExecStop=/playmaster/squad44/psserver stop
+                Type=exec
+                Restart=always
+
+                [Install]
+                WantedBy=multi-user.target
+            overwrite: true
+            encoding: utf8
+            permissions: 0777
+            owner: psserver
+            group: playmasters
+                        
+      - name: EnableService
+        action: ExecuteBash
+        timeoutSeconds: 2
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          commands:
+            - sudo systemctl enable squad44.service
+            - sudo systemctl status squad44.service
+
+
+
+
+
+

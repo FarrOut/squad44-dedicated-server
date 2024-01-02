@@ -26,13 +26,15 @@ class Squad44Server(Stack):
         security_group = auth_stack.security_group
 
         key_pair = auth_stack.key_pair
-        CfnOutput(self, "KeyPairRetrievalCommand", value=f"aws ssm get-parameter --name /ec2/keypair/{key_pair.key_pair_id} --with-decryption --query Parameter.Value --output text > squad44-key-pair.pem",
-                  description="The command to fetch the generated private key from the Parameter Store to a local file.")
+        # CfnOutput(self, "KeyPairRetrievalCommand", value=f"aws ssm get-parameter --name /ec2/keypair/{key_pair.key_pair_id} --with-decryption --query Parameter.Value --output text > squad44-key-pair.pem",
+        #           description="The command to fetch the generated private key from the Parameter Store to a local file.")
 
         # COMPUTING
 
         machine_image = ec2.MachineImage.lookup(
-            name='*squad44*', owners=[str(self.account)])
+            name='*squad44*', owners=[str(self.account)],
+            filters={'architecture': ['x86_64']},
+        )
 
         # CfnOutput(self, "MachineImageId", value=str(machine_image),
         #           description='The ID of the Machine Image.')
@@ -41,17 +43,35 @@ class Squad44Server(Stack):
         # CfnOutput(self, "MachineImageOwner", value=str(
         #     machine_image.image_owner_alias))
 
-        # template = ec2.LaunchTemplate(self, "LaunchTemplate",
-        #                               machine_image=machine_image,
-        #                               security_group=security_group,
-        #                               key_pair=key_pair,
-        #                               instance_profile=auth_stack.instance_profile,
-        #                               )
-        # template.apply_removal_policy(removal_policy)
+        ubuntu_bootstrapping = ec2.UserData.for_linux()
 
-        # CfnOutput(self, "LaunchTemplateName", value=str(template.launch_template_name),
-        #           description='The name of the Launch Template.')
-        # CfnOutput(self, "LaunchTemplateId", value=str(template.launch_template_id),
-        #           description='The ID of the Launch Template.')
-        # CfnOutput(self, "LaunchTemplateDefaultVersionNumber", value=str(
-        #     template.default_version_number), description='The default version for the launch template.')
+        ubuntu_bootstrapping.add_commands(
+            'sudo apt-get -y update',
+
+        )
+
+        template = ec2.LaunchTemplate(self, "LaunchTemplate",
+                                      machine_image=machine_image,
+                                      security_group=security_group,
+                                      key_pair=key_pair,
+                                      instance_profile=auth_stack.instance_profile,
+                                      ebs_optimized=None,
+                                      block_devices=[ec2.BlockDevice(
+                                          device_name="/dev/sda1",
+                                          volume=ec2.BlockDeviceVolume.ebs(
+                                              volume_size=70,
+                                              delete_on_termination=True,
+                                          ),
+                                          volume_type=ec2.EbsDeviceVolumeType.gp3
+                                      )],
+                                      instance_type=ec2.InstanceType.of(
+                                          ec2.InstanceClass.R5, ec2.InstanceSize.XLARGE),
+                                      )
+        template.apply_removal_policy(removal_policy)
+
+        CfnOutput(self, "LaunchTemplateName", value=str(template.launch_template_name),
+                  description='The name of the Launch Template.')
+        CfnOutput(self, "LaunchTemplateId", value=str(template.launch_template_id),
+                  description='The ID of the Launch Template.')
+        CfnOutput(self, "LaunchTemplateDefaultVersionNumber", value=str(
+            template.default_version_number), description='The default version for the launch template.')

@@ -73,7 +73,7 @@ class ImageBuilderPipeline(NestedStack):
                                                      delete_on_termination=True,
                                                      encrypted=False,
                                                      volume_size=70,
-                                                     volume_type="standard"
+                                                     volume_type="gp3"
                                                  ),
                                                  virtual_name="see-drive"
                                              )],
