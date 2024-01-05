@@ -19,7 +19,10 @@ africa_env = Environment(account=os.getenv(
 
 app = App()
 
-version = "0.0.31"
+version = "0.0.37"
+
+peers = app.node.try_get_context("peers")
+key_name = app.node.try_get_context("key_name")
 
 image_builder = Squad44ImageBuilder(app, "Squad44ImageBuilder",
                                     env=africa_env,
@@ -29,6 +32,8 @@ image_builder = Squad44ImageBuilder(app, "Squad44ImageBuilder",
 
 Squad44Server(app, "Squad44Server",
               env=africa_env,
+              whitelisted_peer=ec2.Peer.prefix_list(peers),
+              key_name=key_name,
               removal_policy=RemovalPolicy.DESTROY,
               )
 

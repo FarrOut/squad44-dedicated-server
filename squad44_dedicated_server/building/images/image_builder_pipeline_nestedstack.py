@@ -116,65 +116,65 @@ class ImageBuilderPipeline(NestedStack):
 
         # instance_profile.role.grant_assume_role(
         #     iam.ServicePrincipal("imagebuilder.amazonaws.com"))
-        lifecycle_policy = imagebuilder.CfnLifecyclePolicy(self, "MyCfnLifecyclePolicy",
-                                                           execution_role=f"arn:aws:iam::{
-                                                               self.account}:role/aws-service-role/imagebuilder.amazonaws.com/AWSServiceRoleForImageBuilder",
-                                                           name="Springcleaner",
-                                                           policy_details=[imagebuilder.CfnLifecyclePolicy.PolicyDetailProperty(
-                                                               action=imagebuilder.CfnLifecyclePolicy.ActionProperty(
-                                                                   type="DELETE",
+        # lifecycle_policy = imagebuilder.CfnLifecyclePolicy(self, "MyCfnLifecyclePolicy",
+        #                                                    execution_role=f"arn:aws:iam::{
+        #                                                        self.account}:role/aws-service-role/imagebuilder.amazonaws.com/AWSServiceRoleForImageBuilder",
+        #                                                    name=f"retire-squad44",
+        #                                                    policy_details=[imagebuilder.CfnLifecyclePolicy.PolicyDetailProperty(
+        #                                                        action=imagebuilder.CfnLifecyclePolicy.ActionProperty(
+        #                                                            type="DELETE",
 
-                                                                   # the properties below are optional
-                                                                   include_resources=imagebuilder.CfnLifecyclePolicy.IncludeResourcesProperty(
-                                                                       amis=True,
-                                                                       snapshots=True
-                                                                   )
-                                                               ),
-                                                               filter=imagebuilder.CfnLifecyclePolicy.FilterProperty(
-                                                                   type="AGE",
-                                                                   value=1,
-                                                                   unit="DAYS",
-                                                                   # retain_at_least=1,
+        #                                                            # the properties below are optional
+        #                                                            include_resources=imagebuilder.CfnLifecyclePolicy.IncludeResourcesProperty(
+        #                                                                amis=True,
+        #                                                                snapshots=True
+        #                                                            )
+        #                                                        ),
+        #                                                        filter=imagebuilder.CfnLifecyclePolicy.FilterProperty(
+        #                                                            type="AGE",
+        #                                                            value=1,
+        #                                                            unit="DAYS",
+        #                                                            # retain_at_least=1,
 
-                                                               ),
+        #                                                        ),
 
-                                                               #        # the properties below are optional
-                                                               #        exclusion_rules=imagebuilder.CfnLifecyclePolicy.ExclusionRulesProperty(
-                                                               #            amis=imagebuilder.CfnLifecyclePolicy.AmiExclusionRulesProperty(
-                                                               #                is_public=False,
-                                                               #                last_launched=imagebuilder.CfnLifecyclePolicy.LastLaunchedProperty(
-                                                               #                    unit="unit",
-                                                               #                    value=123
-                                                               #                ),
-                                                               #                regions=[
-                                                               #                    "regions"],
-                                                               #                shared_accounts=[
-                                                               #                    "sharedAccounts"],
-                                                               #                tag_map={
-                                                               #                    "tag_map_key": "tagMap"
-                                                               #                }
-                                                               #            ),
-                                                               #            tag_map={
-                                                               #                "tag_map_key": "tagMap"
-                                                               #            }
-                                                               #        )
-                                                           )],
-                                                           resource_selection=imagebuilder.CfnLifecyclePolicy.ResourceSelectionProperty(
-                                                               recipes=[imagebuilder.CfnLifecyclePolicy.RecipeSelectionProperty(
-                                                                   name=recipe.attr_name,
-                                                                   semantic_version=version,
-                                                               )],
-                                                           ),
-                                                           resource_type="AMI_IMAGE",
-                                                           status='ENABLED',
-                                                           description='Delete images older than a day.',
-                                                           )
-        lifecycle_policy.apply_removal_policy(removal_policy)
-        CfnOutput(self, "LifecyclePolicyArn", value=lifecycle_policy.attr_arn,
-                  description="The ARN of the lifecycle policy.")
-        CfnOutput(self, "LifecyclePolicyName", value=lifecycle_policy.name,
-                  description="The name of the lifecycle policy.")
-        CfnOutput(self, "LifecyclePolicyDescription", value=str(lifecycle_policy.description),
-                  description="The description of the lifecycle policy.")
-        CfnOutput(self, "LifecyclePolicyStatus", value=str(
-            lifecycle_policy.status), description="The status of the lifecycle policy.")
+        #                                                        #        # the properties below are optional
+        #                                                        #        exclusion_rules=imagebuilder.CfnLifecyclePolicy.ExclusionRulesProperty(
+        #                                                        #            amis=imagebuilder.CfnLifecyclePolicy.AmiExclusionRulesProperty(
+        #                                                        #                is_public=False,
+        #                                                        #                last_launched=imagebuilder.CfnLifecyclePolicy.LastLaunchedProperty(
+        #                                                        #                    unit="unit",
+        #                                                        #                    value=123
+        #                                                        #                ),
+        #                                                        #                regions=[
+        #                                                        #                    "regions"],
+        #                                                        #                shared_accounts=[
+        #                                                        #                    "sharedAccounts"],
+        #                                                        #                tag_map={
+        #                                                        #                    "tag_map_key": "tagMap"
+        #                                                        #                }
+        #                                                        #            ),
+        #                                                        #            tag_map={
+        #                                                        #                "tag_map_key": "tagMap"
+        #                                                        #            }
+        #                                                        #        )
+        #                                                    )],
+        #                                                    resource_selection=imagebuilder.CfnLifecyclePolicy.ResourceSelectionProperty(
+        #                                                        recipes=[imagebuilder.CfnLifecyclePolicy.RecipeSelectionProperty(
+        #                                                            name=recipe.attr_name,
+        #                                                            semantic_version=version,
+        #                                                        )],
+        #                                                    ),
+        #                                                    resource_type="AMI_IMAGE",
+        #                                                    status='ENABLED',
+        #                                                    description='Delete images older than a day.',
+        #                                                    )
+        # lifecycle_policy.apply_removal_policy(removal_policy)
+        # CfnOutput(self, "LifecyclePolicyArn", value=lifecycle_policy.attr_arn,
+        #           description="The ARN of the lifecycle policy.")
+        # CfnOutput(self, "LifecyclePolicyName", value=lifecycle_policy.name,
+        #           description="The name of the lifecycle policy.")
+        # CfnOutput(self, "LifecyclePolicyDescription", value=str(lifecycle_policy.description),
+        #           description="The description of the lifecycle policy.")
+        # CfnOutput(self, "LifecyclePolicyStatus", value=str(
+        #     lifecycle_policy.status), description="The status of the lifecycle policy.")

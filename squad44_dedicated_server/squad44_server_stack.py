@@ -1,9 +1,10 @@
 from aws_cdk import (
-    # Duration,
+    Duration,
     Stack, RemovalPolicy, CfnOutput, aws_iam as iam,
     aws_ec2 as ec2, aws_autoscaling as autoscaling,
 )
 from constructs import Construct
+from squad44_dedicated_server.deploying.instances_stack import Instances
 from squad44_dedicated_server.deploying.networking.vpc_nestedstack import Vpc
 from squad44_dedicated_server.deploying.security.server_authorization_nestedstack import ServerAuthorization
 from squad44_dedicated_server.storage.build_assets_nestedstack import BuildAssetsNestedStack
@@ -14,6 +15,8 @@ class Squad44Server(Stack):
 
     def __init__(self, scope: Construct, construct_id: str,
                  #  machine_image: ec2.IMachineImage,
+                 whitelisted_peer: ec2.Peer,
+                 key_name: str,
                  removal_policy: RemovalPolicy = RemovalPolicy.DESTROY,
                  **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -22,6 +25,7 @@ class Squad44Server(Stack):
         auth_stack = ServerAuthorization(
             self, "ServerAuthorization",
             vpc=vpc,
+            whitelisted_peer=whitelisted_peer,
             removal_policy=removal_policy)
         security_group = auth_stack.security_group
 
@@ -36,42 +40,50 @@ class Squad44Server(Stack):
             filters={'architecture': ['x86_64']},
         )
 
-        # CfnOutput(self, "MachineImageId", value=str(machine_image),
-        #           description='The ID of the Machine Image.')
-        # CfnOutput(self, "MachineImageName", value=str(machine_image.image_name),
-        #           description='The name of the Machine Image.')
-        # CfnOutput(self, "MachineImageOwner", value=str(
-        #     machine_image.image_owner_alias))
+        # template = ec2.LaunchTemplate(self, "LaunchTemplate",
+        #                               machine_image=machine_image,
+        #                               security_group=security_group,
+        #                               key_pair=key_pair,
+        #                               instance_profile=auth_stack.instance_profile,
+        #                               ebs_optimized=None,
+        #                               block_devices=[ec2.BlockDevice(
+        #                                   device_name="/dev/sda1",
+        #                                   volume=ec2.BlockDeviceVolume.ebs(
+        #                                       volume_size=70,
+        #                                       delete_on_termination=True,
+        #                                   ),
+        #                                   volume_type=ec2.EbsDeviceVolumeType.GP3
+        #                               )],
+        #                               instance_type=ec2.InstanceType.of(
+        #                                   ec2.InstanceClass.R5, ec2.InstanceSize.XLARGE),
+        #                               )
+        # template.apply_removal_policy(removal_policy)
 
-        ubuntu_bootstrapping = ec2.UserData.for_linux()
+        # CfnOutput(self, "LaunchTemplateName", value=str(template.launch_template_name),
+        #           description='The name of the Launch Template.')
+        # CfnOutput(self, "LaunchTemplateId", value=str(template.launch_template_id),
+        #           description='The ID of the Launch Template.')
+        # CfnOutput(self, "LaunchTemplateDefaultVersionNumber", value=str(
+        #     template.default_version_number), description='The default version for the launch template.')
 
-        ubuntu_bootstrapping.add_commands(
-            'sudo apt-get -y update',
+        instances = Instances(self, "Instances", vpc=vpc, key_name=key_name,
+                              debug_mode=True, 
+                              machine_image=machine_image,
+                              security_group=security_group, )
 
-        )
-
-        template = ec2.LaunchTemplate(self, "LaunchTemplate",
-                                      machine_image=machine_image,
-                                      security_group=security_group,
-                                      key_pair=key_pair,
-                                      instance_profile=auth_stack.instance_profile,
-                                      ebs_optimized=None,
-                                      block_devices=[ec2.BlockDevice(
-                                          device_name="/dev/sda1",
-                                          volume=ec2.BlockDeviceVolume.ebs(
-                                              volume_size=70,
-                                              delete_on_termination=True,
-                                          ),
-                                          volume_type=ec2.EbsDeviceVolumeType.gp3
-                                      )],
-                                      instance_type=ec2.InstanceType.of(
-                                          ec2.InstanceClass.R5, ec2.InstanceSize.XLARGE),
-                                      )
-        template.apply_removal_policy(removal_policy)
-
-        CfnOutput(self, "LaunchTemplateName", value=str(template.launch_template_name),
-                  description='The name of the Launch Template.')
-        CfnOutput(self, "LaunchTemplateId", value=str(template.launch_template_id),
-                  description='The ID of the Launch Template.')
-        CfnOutput(self, "LaunchTemplateDefaultVersionNumber", value=str(
-            template.default_version_number), description='The default version for the launch template.')
+        CfnOutput(self, 'InstancePublicDNSname',
+                  value=instances.instance_public_name,
+                  description='Publicly-routable DNS name for this instance.',
+                  )
+        CfnOutput(self, 'InstanceSSHcommand',
+                  value=instances.ssh_command,
+                  description='Command to SSH into instance.',
+                  )
+        CfnOutput(self, 'MoshCommand',
+                  value=instances.mosh_command,
+                  description='Command to SSH into instance over MOSH.',
+                  )
+        CfnOutput(self, 'MobaXtermMoshCommand',
+                  value=instances.mobaxterm_mosh_command,
+                  description='Command to create new SSH session over MOSH via MobaXTerm.',
+                  )

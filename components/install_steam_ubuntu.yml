@@ -27,7 +27,7 @@ phases:
         inputs:
           commands:
             - sudo apt-get -y install curl wget file tar bzip2 gzip unzip bsdmainutils python3 util-linux ca-certificates binutils bc jq tmux netcat lib32gcc-s1 lib32stdc++6 libsdl2-2.0-0:i386 libgconf-2-4 jq nano locales 
-            - sudo apt-get -y install lib32gcc1
+            - sudo apt-get -y install lib32gcc1 net-tools
 
       - name: SetLocales
         action: ExecuteBash

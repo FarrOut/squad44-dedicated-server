@@ -87,18 +87,18 @@ phases:
             overwrite: true
             encoding: utf8
             permissions: 0777
-            owner: psserver
-            group: playmasters
+            owner: root
+            group: root
                         
-      - name: EnableService
-        action: ExecuteBash
-        timeoutSeconds: 2
-        onFailure: Abort
-        maxAttempts: 3
-        inputs:
-          commands:
-            - sudo systemctl enable squad44.service
-            - sudo systemctl status squad44.service
+      # - name: EnableService
+      #   action: ExecuteBash
+      #   timeoutSeconds: 2
+      #   onFailure: Abort
+      #   maxAttempts: 3
+      #   inputs:
+      #     commands:
+      #       - sudo systemctl enable squad44.service
+      #       - sudo systemctl status squad44.service
 
 
 

@@ -9,6 +9,7 @@ class ServerAuthorization(NestedStack):
 
     def __init__(self, scope: Construct, construct_id: str,
                  vpc: ec2.IVpc,
+                 whitelisted_peer: ec2.Peer,
                  removal_policy: RemovalPolicy = RemovalPolicy.RETAIN,
                  **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -34,9 +35,13 @@ class ServerAuthorization(NestedStack):
                   value=self.instance_profile.instance_profile_arn,)
 
         self.security_group = ec2.SecurityGroup(self, "Squad44ServerSecurityGroup",
-                                                allow_all_outbound=False,
+                                                allow_all_outbound=True,
                                                 vpc=vpc,
                                                 )
+
+        self.security_group.add_ingress_rule(whitelisted_peer, ec2.Port.tcp(22),
+                                             "allow ssh access from trusted whitelist")
+
         self.security_group.add_ingress_rule(
             ec2.Peer.any_ipv4(), ec2.Port.tcp(10027), "game port tcp")
         self.security_group.add_ingress_rule(
@@ -48,7 +53,7 @@ class ServerAuthorization(NestedStack):
         self.security_group.add_ingress_rule(
             ec2.Peer.any_ipv4(), ec2.Port.tcp(10038), "query port plus one tcp")
         self.security_group.add_ingress_rule(
-            ec2.Peer.any_ipv4(), ec2.Port.udp(10038), "game port plus one udp")
+            ec2.Peer.any_ipv4(), ec2.Port.udp(10038), "query port plus one udp")
         self.security_group.add_ingress_rule(
             ec2.Peer.any_ipv4(), ec2.Port.tcp(21114), "rcon tcp")
         self.security_group.add_ingress_rule(
